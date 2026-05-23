@@ -1,8 +1,0 @@
-# Aftman manages versioned Roblox dev tools per-project.
-# After installing aftman (see README), run `aftman install` in this directory
-# to fetch the pinned versions below.
-
-[tools]
-rojo = "rojo-rbx/rojo@7.4.4"
-selene = "Kampfkarren/selene@0.27.1"
-stylua = "JohnnyMorganz/StyLua@0.20.0"

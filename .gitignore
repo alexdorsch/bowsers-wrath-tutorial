@@ -1,0 +1,8 @@
+# Other projects in this directory shouldn't be tracked by this repo
+infinite-parkour/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
