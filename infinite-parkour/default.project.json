@@ -1,0 +1,69 @@
+{
+  "name": "infinite-parkour",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Remotes": {
+        "$className": "Folder"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "FilteringEnabled": true,
+        "StreamingEnabled": false
+      },
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Size": [2048, 1, 2048],
+          "Position": [0, -10, 0],
+          "Anchored": true,
+          "Locked": true,
+          "Color": [0.05, 0.05, 0.08],
+          "Material": "Slate",
+          "TopSurface": "Smooth",
+          "BottomSurface": "Smooth"
+        }
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 22,
+        "Ambient": [0.05, 0.05, 0.12],
+        "OutdoorAmbient": [0.08, 0.08, 0.15],
+        "Brightness": 1,
+        "GlobalShadows": true,
+        "FogEnd": 600,
+        "FogStart": 100,
+        "FogColor": [0.05, 0.02, 0.1]
+      },
+      "Sky": {
+        "$className": "Sky",
+        "$properties": {
+          "StarCount": 3000,
+          "CelestialBodiesShown": false
+        }
+      }
+    },
+    "SoundService": {
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    }
+  }
+}
