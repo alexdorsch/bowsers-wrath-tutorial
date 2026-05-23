@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bowser's Wrath — The Builder's Codex</title>
+<meta name="description" content="A step-by-step kid-friendly guide to building a realistic Bowser-themed roller coaster in Theme Park Tycoon 2.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BOWSER'S WRATH — BUILDER'S CODEX
+   A maximalist retro-arcade castle aesthetic
+   ============================================================ */
+
+:root {
+  /* Lava palette */
+  --magma-core: #ff6b00;
+  --magma-hot:  #ffb800;
+  --magma-cool: #c4351a;
+  --ember:      #ff3355;
+
+  /* Castle palette */
+  --stone-deep: #0c0907;
+  --stone-mid:  #1a1410;
+  --stone-up:   #2a211c;
+  --stone-edge: #4a3a30;
+
+  /* Bowser accents */
+  --shell:      #84cc16;
+  --shell-dark: #4f7942;
+  --spike:      #f5c518;
+  --banner:     #c026d3;
+
+  /* Text */
+  --paper:      #fef7e0;
+  --paper-dim:  #c9b89a;
+  --paper-mute: #7a6a52;
+
+  /* System */
+  --shadow-deep: 0 24px 60px -12px rgba(0,0,0,0.8);
+  --shadow-glow: 0 0 60px rgba(255,107,0,0.4);
+  --grain-url:  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Fraunces', Georgia, serif;
+  font-feature-settings: 'ss01', 'ss02';
+  background: var(--stone-deep);
+  color: var(--paper);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Persistent volcanic background — radial pulses + grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 110%, rgba(255,107,0,0.18), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% -10%, rgba(196,53,26,0.15), transparent 60%),
+    radial-gradient(ellipse 80% 80% at 50% 50%, var(--stone-mid), var(--stone-deep) 70%);
+  z-index: -2;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: var(--grain-url);
+  background-size: 200px 200px;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ============================================================
+   PROGRESS HUD (sticky top)
+   ============================================================ */
+.hud {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: linear-gradient(180deg, rgba(12,9,7,0.96), rgba(12,9,7,0.86));
+  border-bottom: 2px solid var(--magma-core);
+  backdrop-filter: blur(12px);
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.hud-logo {
+  font-family: 'Rubik Mono One', monospace;
+  color: var(--magma-hot);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 12px rgba(255,184,0,0.6);
+}
+.hud-track {
+  flex: 1;
+  height: 8px;
+  background: var(--stone-up);
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--stone-edge);
+  clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%);
+}
+.hud-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--magma-cool), var(--magma-core), var(--magma-hot));
+  transition: width 0.6s cubic-bezier(.2,.8,.3,1);
+  box-shadow: 0 0 16px var(--magma-core);
+}
+.hud-stars {
+  color: var(--spike);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hud-stars b {
+  font-size: 1rem;
+  color: var(--magma-hot);
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  min-height: 100vh;
+  padding: 8rem 2rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-flames {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.flame {
+  width: 80px;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 80%, var(--magma-hot) 0%, var(--magma-core) 30%, var(--magma-cool) 60%, transparent 80%);
+  filter: blur(8px);
+  opacity: 0.85;
+  border-radius: 50% 50% 40% 40% / 80% 80% 40% 40%;
+  animation: flicker 1.8s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+.flame:nth-child(2) { animation-delay: -0.4s; animation-duration: 2.1s; height: 240px; }
+.flame:nth-child(3) { animation-delay: -0.8s; animation-duration: 1.5s; height: 180px; }
+.flame:nth-child(4) { animation-delay: -1.2s; animation-duration: 2.4s; height: 260px; }
+.flame:nth-child(5) { animation-delay: -1.6s; animation-duration: 1.7s; height: 200px; }
+.flame:nth-child(6) { animation-delay: -2.0s; animation-duration: 2.2s; height: 220px; }
+.flame:nth-child(7) { animation-delay: -2.4s; animation-duration: 1.9s; height: 190px; }
+
+@keyframes flicker {
+  0%   { transform: scaleY(1) scaleX(1) translateY(0); opacity: 0.85; }
+  50%  { transform: scaleY(1.15) scaleX(0.92) translateY(-8px); opacity: 1; }
+  100% { transform: scaleY(0.95) scaleX(1.08) translateY(2px); opacity: 0.75; }
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.4em;
+  color: var(--spike);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+  animation: rise 1.2s 0.1s both;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: '▲▲▲';
+  margin: 0 1rem;
+  opacity: 0.6;
+}
+
+.hero-title {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: clamp(3rem, 12vw, 9rem);
+  line-height: 0.85;
+  color: var(--paper);
+  letter-spacing: -0.02em;
+  text-shadow:
+    0 0 30px rgba(255,107,0,0.5),
+    4px 4px 0 var(--magma-cool),
+    8px 8px 0 var(--stone-up);
+  position: relative;
+  z-index: 2;
+  margin-bottom: 1rem;
+  animation: rise 1.2s 0.3s both, sway 6s ease-in-out 1.5s infinite;
+}
+.hero-title span {
+  display: inline-block;
+  color: var(--magma-hot);
+  text-shadow:
+    0 0 30px rgba(255,184,0,0.7),
+    4px 4px 0 var(--magma-cool),
+    8px 8px 0 var(--stone-up);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sway {
+  0%, 100% { transform: translateY(0) rotate(-0.3deg); }
+  50%      { transform: translateY(-4px) rotate(0.3deg); }
+}
+
+.hero-subtitle {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  font-style: italic;
+  color: var(--paper-dim);
+  font-weight: 500;
+  max-width: 700px;
+  margin: 1rem auto 2.5rem;
+  position: relative;
+  z-index: 2;
+  animation: rise 1.2s 0.6s both;
+}
+
+.hero-cta {
+  display: inline-block;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  color: var(--stone-deep);
+  background: var(--magma-hot);
+  padding: 1.2rem 3rem;
+  position: relative;
+  z-index: 2;
+  border: 3px solid var(--paper);
+  box-shadow:
+    6px 6px 0 var(--magma-cool),
+    12px 12px 0 var(--stone-up),
+    0 0 40px rgba(255,184,0,0.5);
+  clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  animation: rise 1.2s 0.9s both;
+  text-transform: uppercase;
+}
+.hero-cta:hover {
+  transform: translate(-3px, -3px);
+  box-shadow:
+    9px 9px 0 var(--magma-cool),
+    15px 15px 0 var(--stone-up),
+    0 0 60px rgba(255,184,0,0.8);
+}
+.hero-cta:active {
+  transform: translate(3px, 3px);
+  box-shadow:
+    3px 3px 0 var(--magma-cool),
+    6px 6px 0 var(--stone-up);
+}
+
+.hero-bowser-face {
+  position: absolute;
+  top: 8rem;
+  right: -120px;
+  width: 400px;
+  height: 400px;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================================
+   SECTIONS — general
+   ============================================================ */
+section {
+  padding: 6rem 2rem;
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.4em;
+  color: var(--spike);
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: var(--magma-core);
+}
+
+.section-title {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 0.95;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+}
+.section-title em {
+  font-style: normal;
+  color: var(--magma-hot);
+  text-shadow: 0 0 24px rgba(255,184,0,0.4);
+}
+
+.section-intro {
+  font-size: 1.15rem;
+  color: var(--paper-dim);
+  max-width: 740px;
+  margin-bottom: 3rem;
+  font-weight: 500;
+}
+
+/* ============================================================
+   MISSION BRIEFING — stat cards
+   ============================================================ */
+.briefing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.stat-card {
+  background: linear-gradient(180deg, var(--stone-mid), var(--stone-up));
+  border: 2px solid var(--stone-edge);
+  padding: 2rem 1.5rem;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  transition: transform 0.3s, border-color 0.3s;
+}
+.stat-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--magma-core);
+}
+.stat-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(255,107,0,0.6));
+}
+.stat-value {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1.8rem;
+  color: var(--magma-hot);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--paper-dim);
+  text-transform: uppercase;
+}
+.stat-note {
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--paper-mute);
+  font-style: italic;
+}
+
+/* ============================================================
+   MAP / SCHEMATIC
+   ============================================================ */
+.map-wrap {
+  background:
+    radial-gradient(ellipse at center, rgba(255,107,0,0.05), transparent 70%),
+    linear-gradient(180deg, var(--stone-mid), var(--stone-deep));
+  border: 2px solid var(--stone-edge);
+  padding: 2rem;
+  position: relative;
+  clip-path: polygon(0 24px, 24px 0, calc(100% - 24px) 0, 100% 24px, 100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%, 0 calc(100% - 24px));
+}
+.map-svg {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  display: block;
+}
+.map-zone {
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.map-zone:hover {
+  opacity: 0.7;
+}
+.zone-hotspot {
+  cursor: pointer;
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.zone-hotspot:nth-child(odd) { animation-delay: -1.2s; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.15); opacity: 0.8; }
+}
+
+.zone-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--stone-deep);
+  border-left: 4px solid var(--magma-hot);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+}
+.zone-info-number {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 3rem;
+  color: var(--magma-hot);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.zone-info-text strong {
+  display: block;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1rem;
+  color: var(--spike);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.zone-info-text p {
+  color: var(--paper-dim);
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ============================================================
+   GEAR UP
+   ============================================================ */
+.gear-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+.gear-card {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-edge);
+  padding: 1.5rem;
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.gear-card:hover {
+  border-color: var(--magma-core);
+  transform: translateY(-4px);
+}
+.gear-card-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--stone-edge);
+}
+.gear-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--stone-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  border: 2px solid var(--magma-core);
+  flex-shrink: 0;
+}
+.gear-card h3 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+}
+.gear-card ul {
+  list-style: none;
+  font-size: 0.95rem;
+  color: var(--paper-dim);
+}
+.gear-card li {
+  padding: 0.4rem 0;
+  padding-left: 1.4rem;
+  position: relative;
+}
+.gear-card li::before {
+  content: '◆';
+  position: absolute;
+  left: 0;
+  color: var(--magma-core);
+  font-size: 0.7rem;
+  top: 0.7rem;
+}
+.gear-card li b {
+  color: var(--spike);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   PHASES (the heart of the tutorial)
+   ============================================================ */
+.phases {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.phase {
+  background: linear-gradient(180deg, var(--stone-mid), var(--stone-up));
+  border: 2px solid var(--stone-edge);
+  overflow: hidden;
+  transition: border-color 0.3s;
+  position: relative;
+}
+.phase.is-open { border-color: var(--magma-core); }
+.phase.is-complete { border-color: var(--shell); }
+
+.phase-head {
+  padding: 1.4rem 1.6rem;
+  display: grid;
+  grid-template-columns: 60px 1fr auto auto;
+  align-items: center;
+  gap: 1.2rem;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.phase-head:hover { background: rgba(255,107,0,0.05); }
+
+.phase-number {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 2.2rem;
+  color: var(--magma-hot);
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(255,184,0,0.4);
+}
+.phase.is-complete .phase-number { color: var(--shell); text-shadow: 0 0 14px rgba(132,204,22,0.5); }
+
+.phase-titleblock h2 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  margin-bottom: 0.3rem;
+}
+.phase-titleblock p {
+  font-size: 0.9rem;
+  color: var(--paper-mute);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.phase-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--spike);
+  letter-spacing: 0.1em;
+  background: var(--stone-deep);
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--stone-edge);
+}
+
+.phase-toggle {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik Mono One', monospace;
+  color: var(--magma-hot);
+  font-size: 1.2rem;
+  border: 2px solid var(--magma-core);
+  background: var(--stone-deep);
+  transition: transform 0.4s cubic-bezier(.2,.9,.3,1.2);
+}
+.phase.is-open .phase-toggle { transform: rotate(45deg); }
+
+.phase-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease;
+}
+.phase.is-open .phase-body { max-height: 5000px; }
+
+.phase-content {
+  padding: 0 1.6rem 1.8rem;
+  border-top: 1px dashed var(--stone-edge);
+  padding-top: 1.5rem;
+}
+.phase-content h4 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.95rem;
+  color: var(--spike);
+  letter-spacing: 0.05em;
+  margin: 1.4rem 0 0.6rem;
+  text-transform: uppercase;
+}
+.phase-content > p {
+  color: var(--paper-dim);
+  margin-bottom: 1rem;
+  font-size: 1.02rem;
+}
+.phase-content em { color: var(--magma-hot); font-style: italic; }
+.phase-content strong { color: var(--paper); font-weight: 700; }
+
+.checklist {
+  list-style: none;
+  margin: 1rem 0;
+}
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--stone-deep);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--stone-edge);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+}
+.checklist li:hover { background: rgba(255,107,0,0.05); border-color: var(--magma-cool); }
+.checklist li.done {
+  background: rgba(132,204,22,0.05);
+  border-left-color: var(--shell);
+}
+.checklist li.done .check-text { color: var(--paper-mute); text-decoration: line-through; }
+
+.check-box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--magma-core);
+  background: var(--stone-mid);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.9rem;
+  color: var(--shell);
+  margin-top: 2px;
+  transition: all 0.2s;
+}
+.checklist li.done .check-box {
+  background: var(--shell);
+  color: var(--stone-deep);
+  border-color: var(--shell);
+  box-shadow: 0 0 16px rgba(132,204,22,0.5);
+}
+
+.check-text {
+  flex: 1;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.check-text small {
+  display: block;
+  color: var(--paper-mute);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-top: 0.2rem;
+}
+
+.callout {
+  margin: 1.2rem 0;
+  padding: 1rem 1.2rem;
+  background: rgba(255,107,0,0.08);
+  border-left: 4px solid var(--magma-hot);
+  font-size: 0.95rem;
+  color: var(--paper-dim);
+  position: relative;
+}
+.callout::before {
+  content: 'KOOPA TIP';
+  display: inline-block;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.7rem;
+  color: var(--spike);
+  letter-spacing: 0.2em;
+  margin-right: 0.6rem;
+}
+.callout.danger { background: rgba(220,38,38,0.1); border-left-color: var(--ember); }
+.callout.danger::before { content: 'WATCH OUT'; color: var(--ember); }
+.callout.win { background: rgba(132,204,22,0.08); border-left-color: var(--shell); }
+.callout.win::before { content: 'BOSS MOVE'; color: var(--shell); }
+
+.code-mini {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--stone-deep);
+  color: var(--magma-hot);
+  padding: 0.15em 0.45em;
+  border: 1px solid var(--stone-edge);
+  font-size: 0.88em;
+}
+
+/* ============================================================
+   DECAL VAULT
+   ============================================================ */
+.vault {
+  background:
+    repeating-linear-gradient(45deg, var(--stone-mid) 0 8px, var(--stone-deep) 8px 16px);
+  padding: 2.5rem;
+  border: 2px solid var(--magma-core);
+  position: relative;
+}
+.vault::before {
+  content: '⚠ DECAL VAULT ⚠';
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.8rem;
+  color: var(--magma-hot);
+  background: var(--stone-deep);
+  padding: 0 1rem;
+  letter-spacing: 0.2em;
+}
+.vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.decal-card {
+  background: var(--stone-deep);
+  border: 2px solid var(--stone-edge);
+  padding: 1.2rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.decal-card:hover { border-color: var(--magma-hot); transform: scale(1.02); }
+.decal-card:active { transform: scale(0.98); }
+.decal-name {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.9rem;
+  color: var(--paper);
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.02em;
+}
+.decal-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.3rem;
+  color: var(--magma-hot);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.decal-use {
+  font-size: 0.85rem;
+  color: var(--paper-mute);
+  font-style: italic;
+}
+.decal-copy {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--spike);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--stone-mid);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--stone-edge);
+}
+
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  background: var(--shell);
+  color: var(--stone-deep);
+  padding: 1rem 2rem;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  z-index: 200;
+  transition: transform 0.4s cubic-bezier(.2,.8,.3,1.2);
+  border: 2px solid var(--stone-deep);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ============================================================
+   PRO TIPS
+   ============================================================ */
+.tips-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+.tip {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--stone-mid), var(--stone-up));
+  border: 2px solid var(--stone-edge);
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.tip:hover { border-color: var(--banner); transform: translateY(-4px); }
+.tip-num {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 2.5rem;
+  color: var(--banner);
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  text-shadow: 0 0 16px rgba(192,38,211,0.5);
+  opacity: 0.7;
+}
+.tip h4 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--spike);
+  margin-bottom: 0.6rem;
+  padding-right: 2rem;
+}
+.tip p {
+  font-size: 0.96rem;
+  color: var(--paper-dim);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   VICTORY footer
+   ============================================================ */
+.victory {
+  text-align: center;
+  padding: 8rem 2rem;
+  background:
+    radial-gradient(ellipse at center bottom, rgba(255,184,0,0.18), transparent 60%),
+    var(--stone-deep);
+  border-top: 2px solid var(--magma-core);
+  position: relative;
+  overflow: hidden;
+  margin-top: 4rem;
+}
+.victory-medal {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 2rem;
+  position: relative;
+  filter: grayscale(70%) brightness(0.5);
+  transition: filter 1s, transform 0.8s;
+}
+.victory.unlocked .victory-medal {
+  filter: grayscale(0%) brightness(1);
+  transform: scale(1.05);
+  animation: spin-once 1.5s ease-out;
+}
+@keyframes spin-once {
+  0% { transform: scale(0.5) rotate(-180deg); }
+  100% { transform: scale(1.05) rotate(0deg); }
+}
+.victory h2 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: 0.02em;
+  color: var(--paper-mute);
+  transition: color 0.6s, text-shadow 0.6s;
+  margin-bottom: 1rem;
+}
+.victory.unlocked h2 {
+  color: var(--magma-hot);
+  text-shadow: 0 0 24px rgba(255,184,0,0.6);
+}
+.victory p {
+  color: var(--paper-mute);
+  max-width: 600px;
+  margin: 0 auto;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+.victory.unlocked p { color: var(--paper-dim); }
+
+.sources {
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--stone-edge);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--paper-mute);
+}
+.sources a {
+  color: var(--magma-hot);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--stone-edge);
+}
+.sources a:hover { color: var(--spike); border-bottom-color: var(--magma-hot); }
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+/* Spike border decoration */
+.spikes {
+  height: 24px;
+  background: linear-gradient(180deg, var(--stone-deep) 0%, var(--stone-mid) 100%);
+  position: relative;
+  margin: 4rem 0;
+}
+.spikes::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, transparent 33.33%, var(--magma-core) 33.33%, var(--magma-core) 66.66%, transparent 66.66%),
+    linear-gradient(45deg, transparent 33.33%, var(--magma-core) 33.33%, var(--magma-core) 66.66%, transparent 66.66%);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 0;
+  opacity: 0.6;
+}
+
+/* Reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.reveal.shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .hud { padding: 0.5rem 0.8rem; gap: 0.7rem; font-size: 0.7rem; }
+  .hud-logo { font-size: 0.78rem; }
+  .hero { padding: 6rem 1rem 3rem; }
+  .hero-title { font-size: clamp(2.5rem, 16vw, 5rem); }
+  section { padding: 4rem 1rem; }
+  .phase-head { grid-template-columns: 44px 1fr auto; gap: 0.8rem; padding: 1rem; }
+  .phase-time { display: none; }
+  .phase-number { font-size: 1.8rem; }
+  .phase-content { padding: 0 1rem 1.4rem; }
+  .zone-info { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PROGRESS HUD
+     ============================================================ -->
+<div class="hud" role="banner">
+  <div class="hud-logo">🐲 BOWSER&apos;S WRATH</div>
+  <div class="hud-track" aria-label="Build progress">
+    <div class="hud-fill" id="hudFill"></div>
+  </div>
+  <div class="hud-stars">⭐ <b id="starsEarned">0</b>/<span id="starsTotal">0</span></div>
+</div>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-flames">
+    <div class="flame"></div>
+    <div class="flame"></div>
+    <div class="flame"></div>
+    <div class="flame"></div>
+    <div class="flame"></div>
+    <div class="flame"></div>
+    <div class="flame"></div>
+  </div>
+  <div class="hero-eyebrow">The Builder&apos;s Codex</div>
+  <h1 class="hero-title">BOWSER&apos;S<br><span>WRATH</span></h1>
+  <p class="hero-subtitle">A step-by-step quest to forge the most epic Bowser-themed roller coaster ever built in Theme Park Tycoon 2. Grab your hard hat — and your hammer.</p>
+  <a href="#briefing" class="hero-cta">▶ Begin Quest</a>
+</header>
+
+<!-- ============================================================
+     MISSION BRIEFING
+     ============================================================ -->
+<section id="briefing">
+  <div class="section-label">File 01 — Mission Briefing</div>
+  <h2 class="section-title">Here&apos;s what we&apos;re <em>building</em>.</h2>
+  <p class="section-intro">You&apos;re going to build a giant lava castle with a roller coaster ripping through it. Bowser breathes fire, a magma cavern lights up, and at the end, a huge Bowser statue roars at the riders. Don&apos;t worry — you&apos;ll do it one tiny chunk at a time.</p>
+
+  <div class="briefing-grid">
+    <div class="stat-card reveal">
+      <span class="stat-icon">⏱️</span>
+      <div class="stat-value">6–8 hrs</div>
+      <div class="stat-label">First build pass</div>
+      <div class="stat-note">Spread it across a few play sessions. No rush.</div>
+    </div>
+    <div class="stat-card reveal">
+      <span class="stat-icon">🎯</span>
+      <div class="stat-value">Medium+</div>
+      <div class="stat-label">Difficulty</div>
+      <div class="stat-note">You can do it. The tricky bit is the show effects.</div>
+    </div>
+    <div class="stat-card reveal">
+      <span class="stat-icon">📐</span>
+      <div class="stat-value">60×30</div>
+      <div class="stat-label">Studs of floor</div>
+      <div class="stat-note">About 4×2 of the big grid squares in TPT2.</div>
+    </div>
+    <div class="stat-card reveal">
+      <span class="stat-icon">🎢</span>
+      <div class="stat-value">3 Launches</div>
+      <div class="stat-label">Plus 4 inversions</div>
+      <div class="stat-note">Triangular Multi-launch coaster. Fast and fun.</div>
+    </div>
+  </div>
+</section>
+
+<div class="spikes"></div>
+
+<!-- ============================================================
+     THE MAP
+     ============================================================ -->
+<section id="map">
+  <div class="section-label">File 02 — The Battle Plan</div>
+  <h2 class="section-title">The <em>map</em> of doom.</h2>
+  <p class="section-intro">Click any orange dot to read what happens in that part of the ride. This is the secret blueprint — keep it open in another tab while you build.</p>
+
+  <div class="map-wrap">
+    <svg class="map-svg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+      <!-- background grid -->
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2a211c" stroke-width="0.5"/>
+        </pattern>
+        <radialGradient id="lavaGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffb800" stop-opacity="0.8"/>
+          <stop offset="60%" stop-color="#ff6b00" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#c4351a" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#3a3a40"/>
+          <stop offset="100%" stop-color="#1a1410"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="800" height="480" fill="url(#grid)"/>
+
+      <!-- lava cavern glow -->
+      <ellipse cx="400" cy="240" rx="220" ry="140" fill="url(#lavaGlow)"/>
+
+      <!-- castle walls -->
+      <rect x="60" y="60" width="680" height="360" fill="none" stroke="#4a3a30" stroke-width="2" stroke-dasharray="4 6"/>
+
+      <!-- four corner towers -->
+      <g fill="url(#stoneGrad)" stroke="#4a3a30" stroke-width="2">
+        <rect x="40" y="40" width="60" height="60"/>
+        <rect x="700" y="40" width="60" height="60"/>
+        <rect x="40" y="380" width="60" height="60"/>
+        <rect x="700" y="380" width="60" height="60"/>
+      </g>
+      <!-- tower shell-domes (green) -->
+      <g fill="#4f7942" stroke="#84cc16" stroke-width="1.5">
+        <circle cx="70" cy="40" r="14"/>
+        <circle cx="730" cy="40" r="14"/>
+        <circle cx="70" cy="440" r="14"/>
+        <circle cx="730" cy="440" r="14"/>
+      </g>
+      <!-- tower spikes -->
+      <g fill="#f5c518">
+        <polygon points="62,28 70,12 78,28"/>
+        <polygon points="722,28 730,12 738,28"/>
+        <polygon points="62,452 70,468 78,452"/>
+        <polygon points="722,452 730,468 738,452"/>
+      </g>
+
+      <!-- track path -->
+      <path d="M 200 380
+               L 200 320
+               Q 200 280 260 280
+               L 540 280
+               Q 600 280 600 320
+               L 600 200
+               Q 600 160 540 160
+               L 360 160
+               Q 280 160 280 220
+               L 280 240
+               Q 280 280 340 280
+               L 420 280
+               Q 480 280 480 220
+               L 480 110
+               Q 480 70 420 70
+               L 200 70"
+            fill="none" stroke="#ff6b00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- station -->
+      <rect x="160" y="370" width="80" height="40" fill="#1a1410" stroke="#c026d3" stroke-width="2"/>
+      <text x="200" y="395" fill="#c9b89a" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">STATION</text>
+
+      <!-- Bowser face gate -->
+      <g>
+        <rect x="180" y="320" width="40" height="40" fill="#0c0907" stroke="#f5c518" stroke-width="2"/>
+        <polygon points="186,322 194,308 202,322" fill="#f5c518"/>
+        <polygon points="198,322 206,308 214,322" fill="#f5c518"/>
+        <circle cx="192" cy="338" r="2" fill="#ff3355"/>
+        <circle cx="208" cy="338" r="2" fill="#ff3355"/>
+      </g>
+
+      <!-- Hotspots -->
+      <g class="hotspots">
+        <g class="zone-hotspot" data-zone="1" style="cursor:pointer">
+          <circle cx="200" cy="430" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="200" y="434" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">1</text>
+        </g>
+        <g class="zone-hotspot" data-zone="2" style="cursor:pointer">
+          <circle cx="200" cy="335" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="200" y="339" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">2</text>
+        </g>
+        <g class="zone-hotspot" data-zone="3" style="cursor:pointer">
+          <circle cx="400" cy="270" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="400" y="274" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">3</text>
+        </g>
+        <g class="zone-hotspot" data-zone="4" style="cursor:pointer">
+          <circle cx="600" cy="200" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="600" y="204" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">4</text>
+        </g>
+        <g class="zone-hotspot" data-zone="5" style="cursor:pointer">
+          <circle cx="480" cy="120" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="480" y="124" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">5</text>
+        </g>
+        <g class="zone-hotspot" data-zone="6" style="cursor:pointer">
+          <circle cx="220" cy="90" r="14" fill="#ff6b00" stroke="#fef7e0" stroke-width="2"/>
+          <text x="220" y="94" fill="#0c0907" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle" pointer-events="none">6</text>
+        </g>
+      </g>
+
+      <!-- compass -->
+      <g transform="translate(740,440)">
+        <circle r="18" fill="#1a1410" stroke="#4a3a30"/>
+        <text y="-4" fill="#f5c518" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">N</text>
+        <polygon points="0,-12 -4,4 4,4" fill="#ff6b00"/>
+      </g>
+    </svg>
+
+    <div class="zone-info" id="zoneInfo">
+      <div class="zone-info-number">?</div>
+      <div class="zone-info-text">
+        <strong>Click a number to explore</strong>
+        <p>Each dot is a different scene the rider goes through. Click one to see what to build there.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     GEAR UP
+     ============================================================ -->
+<section id="gear">
+  <div class="section-label">File 03 — Gear Up</div>
+  <h2 class="section-title">Stuff you&apos;ll <em>grab</em> from the build menu.</h2>
+  <p class="section-intro">Open the build menu in Theme Park Tycoon 2 (press <span class="code-mini">B</span>). Here&apos;s the shopping list, sorted by what category to look in. You don&apos;t have to buy it all at once — just know what&apos;s coming.</p>
+
+  <div class="gear-grid">
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🎢</div>
+        <h3>The Coaster</h3>
+      </div>
+      <ul>
+        <li><b>Multi-launch coaster</b> — pick this when placing a ride. Find it under <i>Custom track rides</i>.</li>
+        <li>Turn on <b>Advanced editor</b> right after placing — gives you better track control.</li>
+        <li>Use 5 cars per train. Color them <b>black with red trim</b>.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🔥</div>
+        <h3>Fire & Smoke (VFX)</h3>
+      </div>
+      <ul>
+        <li><b>Fire emitter (Circle)</b> — costs $2,000. Wall torches and lava bubbles.</li>
+        <li><b>Fire emitter (T-shaped)</b> — $4,000. The big launch-flames and Bowser&apos;s breath.</li>
+        <li><b>Smoke emitter (Top)</b> — drifts up from lava pools.</li>
+        <li><b>Smoke emitter (Side)</b> — sideways smoke for cavern walls.</li>
+        <li>All under <i>Other scenery → VFX</i>.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🧱</div>
+        <h3>Walls & Structure</h3>
+      </div>
+      <ul>
+        <li><b>Wall (Brick)</b> — all variants. Castle walls.</li>
+        <li><b>Wall (Brick) Gable</b> — slanted top for tower roofs.</li>
+        <li><b>Wall (Stone)</b> — rougher castle base.</li>
+        <li><b>Fence (Iron)</b> — looks like a portcullis. Use for the gate.</li>
+        <li><b>Rope fence (Wooden)</b> — queue line dividers.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🔲</div>
+        <h3>Primitive Shapes</h3>
+      </div>
+      <ul>
+        <li><b>Wedge</b> — your main SPIKE shape.</li>
+        <li><b>Cylinder</b> — pillars and spike-pillar bases.</li>
+        <li><b>Sphere (half)</b> — the green shell domes on towers.</li>
+        <li><b>Cube</b> — generic building blocks for everything.</li>
+        <li>Under <i>Scenery → Primitives</i>.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">💡</div>
+        <h3>Lighting</h3>
+      </div>
+      <ul>
+        <li><b>Dynamic light</b> — set its color to red/orange/magenta per zone.</li>
+        <li><b>Spotlight</b> — green uplights at the bottom of spike towers.</li>
+        <li><b>Lantern / wall torch</b> — flickery queue lighting.</li>
+        <li>Under <i>Scenery → Light objects</i>.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🎬</div>
+        <h3>Show Controls</h3>
+      </div>
+      <ul>
+        <li><b>Trigger</b> — place on track. Fires off effects when train passes.</li>
+        <li><b>Sequencer</b> — runs a whole show in order (max 600 seconds).</li>
+        <li><b>Timer</b> — for looped ambient effects.</li>
+        <li>Under <i>Other scenery → Activatable / Triggers</i>.</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🖼️</div>
+        <h3>Image Panels (textures!)</h3>
+      </div>
+      <ul>
+        <li><b>Image panel/Large</b> — big surfaces like the cavern floor.</li>
+        <li><b>Image panel/Rectangular</b> — castle banners.</li>
+        <li><b>Image panel/Ceiling</b> — for textured ceilings.</li>
+        <li>These take Roblox <b>decal IDs</b> — see the Decal Vault below!</li>
+      </ul>
+    </div>
+
+    <div class="gear-card reveal">
+      <div class="gear-card-head">
+        <div class="gear-icon">🔊</div>
+        <h3>Sound</h3>
+      </div>
+      <ul>
+        <li><b>Speaker (large)</b> — for ambient music in the queue and cavern.</li>
+        <li><b>Speaker (small)</b> — for tight spots like the throne room.</li>
+        <li>Browse TPT2&apos;s allowed audio for "boss battle", "dark castle", "lava" tracks.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="spikes"></div>
+
+<!-- ============================================================
+     PHASES
+     ============================================================ -->
+<section id="build">
+  <div class="section-label">File 04 — The Build</div>
+  <h2 class="section-title">10 phases. <em>One quest.</em></h2>
+  <p class="section-intro">Each phase has a checklist. Tap or click the boxes as you finish — your progress saves automatically. The bar at the top fills up. Beat all 10 to unlock the victory screen at the end.</p>
+
+  <div class="phases" id="phases">
+    <!-- Phase 1 -->
+    <article class="phase" data-phase="1">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">01</div>
+        <div class="phase-titleblock">
+          <h2>Lay The Foundation</h2>
+          <p>Pick your spot. Flatten. Mark the corners.</p>
+        </div>
+        <div class="phase-time">⏱ 15 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>Before anything fancy, you need a clean floor. Think of it like clearing the table before a big LEGO build.</p>
+
+          <h4>Steps</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Find a flat spot in your park about <strong>60 studs by 30 studs</strong>. That&apos;s 4 big squares wide and 2 tall.<small>Hover the cursor — TPT2 shows stud counts when you place stuff.</small></span></li>
+            <li><span class="check-box"></span><span class="check-text">Open the <strong>Terrain tool</strong> and pick <strong>Flatten</strong>. Drag across the whole area until it&apos;s perfectly flat.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Change the ground material to <strong>dark dirt</strong> or <strong>black sand</strong>. Bowser doesn&apos;t live in a grassy meadow.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At each of the 4 corners, place a tall <strong>cube</strong> (paint it bright pink). These are <em>placeholder markers</em> — they&apos;ll become your spike towers later. Pink so they&apos;re easy to spot!</span></li>
+          </ul>
+
+          <div class="callout">
+            Don&apos;t place near any other ride. Coasters get LOUD with effects, and you don&apos;t want it sitting next to a calm carousel.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 2 -->
+    <article class="phase" data-phase="2">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">02</div>
+        <div class="phase-titleblock">
+          <h2>Build The Track Skeleton</h2>
+          <p>Just the bones. No theming yet. We just want it to ride well.</p>
+        </div>
+        <div class="phase-time">⏱ 45 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>The track is the most important part — if the ride isn&apos;t fun, no amount of pretty stuff will save it. Build it <em>plain</em> first. Then we decorate.</p>
+
+          <h4>Steps</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Open the ride menu and place a <strong>Multi-launch coaster</strong>. Drop the station in the bottom-left of your plot (where the map shows STATION).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Click the station, choose <strong>Edit track</strong>, then turn ON <strong>Advanced editor</strong> (button in the top right of the editor).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Lay the track piece by piece following the orange line on the map: out the station → launch 1 → curve right → climb → big loop area → back down → second launch → top hat → corkscrew → back to brake run → station.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Set <strong>Launch 1</strong> speed: <span class="code-mini">50 mph</span>. <strong>Launch 2</strong>: <span class="code-mini">60 mph</span>. <strong>Launch 3</strong>: <span class="code-mini">40 mph</span>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Set the train to <strong>5 cars</strong>. Open the train color menu and paint the cars <strong>black</strong> with a <strong>red trim</strong>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Hit the green <strong>Test ride</strong> button. Watch the stats: aim for <strong>Excitement 7+</strong> and <strong>Intensity below 9</strong>. Adjust banking and speed if it&apos;s too rough.</span></li>
+          </ul>
+
+          <div class="callout danger">
+            If Intensity goes above 10, guests will refuse to ride. Slow down the launches or smooth out a curve until it drops below 10.
+          </div>
+          <div class="callout win">
+            Hit the targets? Save the ride. Now we never have to touch the track again — only decorate around it!
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 3 -->
+    <article class="phase" data-phase="3">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">03</div>
+        <div class="phase-titleblock">
+          <h2>Throne Room Station</h2>
+          <p>Where riders load up. Make it dramatic.</p>
+        </div>
+        <div class="phase-time">⏱ 60 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>The station is the first thing riders see up close. Treat it like a tiny diorama — every detail counts.</p>
+
+          <h4>Build the Room</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Build walls around the station: <strong>6 studs wide, 8 long, 8 tall</strong>. Use <strong>Wall (Brick)</strong> painted very dark gray.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Add a <strong>ceiling using an Image Panel/Ceiling</strong>. Paste the <em>Brick wall</em> decal ID (<span class="code-mini">107683177</span>) into the panel.</span></li>
+            <li><span class="check-box"></span><span class="check-text">For the floor, lay a big <strong>Image Panel/Large</strong> flat with the <em>Lava</em> decal ID (<span class="code-mini">16001099035</span>) — but stack thin translucent black wedges on top so it looks like cooling magma cracks.</span></li>
+          </ul>
+
+          <h4>Build the Throne</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Stack a <strong>large cube</strong> (painted near-black) at the back wall — this is the throne base.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Add <strong>4 yellow cylinders</strong> behind the throne, sticking up like spikes. Use <strong>wedges</strong> on top to make them pointy.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Add two <strong>half-spheres</strong> as armrests (painted green-shell).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Drop a <strong>dynamic light</strong> next to the throne. Set color to <em>magenta</em> for a creepy glow.</span></li>
+          </ul>
+
+          <h4>The Queue</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Lay a stone path leading to the station entrance. Bend it back and forth (switchbacks) so a line forms.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Add <strong>rope fences</strong> on both sides of the queue path.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place a <strong>wall torch</strong> with a <strong>Fire emitter (Circle)</strong> on top — every 4 studs along the queue. About <strong>6–10 torches</strong> total.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Drop 2 <strong>large speakers</strong> in the queue ceiling. Pick a dark, drum-heavy ambient track from the audio menu.</span></li>
+          </ul>
+
+          <div class="callout">
+            Don&apos;t over-light the queue. It should feel a little scary. The torches are the ONLY lights here.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 4 -->
+    <article class="phase" data-phase="4">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">04</div>
+        <div class="phase-titleblock">
+          <h2>The Castle Exterior</h2>
+          <p>Four spike towers, walls between them, and a giant Bowser-face gate.</p>
+        </div>
+        <div class="phase-time">⏱ 90 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>This is the most exciting part because it&apos;ll start to <em>look</em> like Bowser&apos;s Castle once you finish. Take your time on the towers!</p>
+
+          <h4>Build the 4 Corner Towers</h4>
+          <p>Replace your pink placeholder cubes one at a time. For EACH tower:</p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Stack a tall <strong>cylinder, 12 studs tall, 4 wide</strong>. Paint it dark gray and apply the brick texture decal (<span class="code-mini">107683177</span>) using image panels wrapped around it.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At the top of the cylinder, add <strong>4 wedges</strong> around the rim, points up — these are the crenellation (the bumpy castle-top thing).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Cap the tower with a <strong>half-sphere painted green</strong> (<span class="code-mini">#4f7942</span>) — this is the Bowser shell dome.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Push <strong>6 yellow cylinder spikes</strong> through the dome, sticking out in all directions like a sea urchin.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Repeat for the other 3 towers. They should look identical.</span></li>
+          </ul>
+
+          <h4>Walls Between The Towers</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Connect the towers with <strong>Wall (Brick)</strong>, 8 studs tall.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Top each wall with alternating cube-up / cube-down blocks for that battlement look. Like a castle on a coloring page!</span></li>
+            <li><span class="check-box"></span><span class="check-text">Hang <strong>magenta banner Image Panels</strong> (Image Panel/Rectangular, painted magenta) every 6 studs along the front wall.</span></li>
+          </ul>
+
+          <h4>The Bowser-Face Gate</h4>
+          <p>This is where Launch 1 fires the train out. The gate should be 8 studs wide and 10 tall.</p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Build a stone arch over the launch tunnel using two cylinders for sides and a curved wedge bridge across the top.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Above the arch: add <strong>2 yellow horns</strong> (cylinders tilted outward) and <strong>2 glowing red eyes</strong> (small white spheres with a red dynamic light inside each).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Around the opening, add a row of <strong>white wedges</strong> with the points facing DOWN — these are the bared teeth.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Paint it all very dark gray. The yellow horns and white teeth should be the only bright bits.</span></li>
+          </ul>
+
+          <div class="callout win">
+            Stand in front of the gate at ground level and take a picture. If it looks scary, you nailed it.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 5 -->
+    <article class="phase" data-phase="5">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">05</div>
+        <div class="phase-titleblock">
+          <h2>The Lava Cavern</h2>
+          <p>The dark indoor middle of the ride. Fully enclosed. Glowing.</p>
+        </div>
+        <div class="phase-time">⏱ 60 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>The cavern is the section in the middle of your plot where the dive loop and corkscrew live. We&apos;re going to build a roof over it so it&apos;s pitch dark — except for the lava.</p>
+
+          <h4>Cavern Shell</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Build a big dome over the cavern area using <strong>angled wall pieces</strong> and <strong>sloped roof primitives</strong>. Paint everything stone gray.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Apply the brick decal (<span class="code-mini">107683177</span>) on the inside walls so it looks like cave masonry.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Make sure there are openings for the track to enter and exit. The track should NOT touch the cavern walls.</span></li>
+          </ul>
+
+          <h4>The Lava Floor</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Lay a giant <strong>Image Panel/Large</strong> across the floor of the cavern. Apply lava decal (<span class="code-mini">16001099035</span>).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place <strong>4–6 dynamic lights</strong> just above the lava floor. Set them to <strong>orange-red</strong> and turn brightness up high.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Add <strong>Smoke emitter (Top)</strong> at <strong>6 spots</strong> across the lava floor. Set particle color to dark gray.</span></li>
+          </ul>
+
+          <h4>Stalactites & Hazards</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Hang <strong>5–8 stalactites</strong> from the ceiling — use inverted cylinders with a wedge on the bottom point. Paint them dark gray.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place a <strong>Fire emitter (T-shaped)</strong> at the top of EACH inversion (loop, corkscrew). The rider gets a face-full of flame as they go through!</span></li>
+          </ul>
+
+          <div class="callout danger">
+            Important: NEVER place a fire emitter right ON the track. Place it 3–5 studs to the side so it looks scary but never touches the train.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 6 -->
+    <article class="phase" data-phase="6">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">06</div>
+        <div class="phase-titleblock">
+          <h2>The Bowser Statue Finale</h2>
+          <p>The biggest, baddest set piece. Built block by block.</p>
+        </div>
+        <div class="phase-time">⏱ 45 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>At the end of the ride, just before the brake run, the train passes face-to-face with a giant Bowser. He breathes fire as you go by. Yes, you&apos;re building him out of LEGO-shaped primitives. It works!</p>
+
+          <h4>Body Parts (build from bottom to top)</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text"><strong>Lower body / belly</strong>: a large cube, 8 studs wide, 6 tall. Paint it <strong>cream-yellow</strong> (<span class="code-mini">#fef7e0</span>) — Bowser&apos;s belly is light.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Arms</strong>: two cylinders sticking out to the sides, painted Bowser-green (<span class="code-mini">#4f7942</span>).</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Shell back</strong>: a big half-sphere behind him, painted green. Then poke <strong>8 yellow cylinder spikes</strong> through the shell.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Head</strong>: a sphere on top of the body, painted Bowser-green. Make it about 4 studs across.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Horns</strong>: two yellow cylinders on top of the head, tilted outward.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Eyes</strong>: two small white spheres on the front of the face. Stick a tiny red sphere inside each one for the pupil.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Mouth</strong>: build a dark open wedge cavity in the middle of the face — this is where the fire comes out.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place a <strong>Fire emitter (T-shaped)</strong> INSIDE the mouth opening, pointing outward toward the track.</span></li>
+          </ul>
+
+          <h4>Positioning</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Stand the whole statue so its eyes are at the same height as the train cars when they pass.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place him about <strong>3 studs back</strong> from the track — close enough to feel intimidating, not so close he scrapes the train.</span></li>
+          </ul>
+
+          <div class="callout win">
+            This is your BOSS. Take a screenshot of him when he&apos;s done. Show your family. They&apos;ll be impressed.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 7 -->
+    <article class="phase" data-phase="7">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">07</div>
+        <div class="phase-titleblock">
+          <h2>Wire The Show (Triggers & Sequencers)</h2>
+          <p>This is the wizardry part. Effects fire as the train passes.</p>
+        </div>
+        <div class="phase-time">⏱ 45 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>Triggers detect when the train rolls over them. Sequencers play back a timed list of effects. We&apos;re going to chain them together so the whole ride is a coordinated show.</p>
+
+          <h4>Place The Triggers</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Place a <strong>Trigger</strong> on the track just before <strong>Launch 1</strong>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place another Trigger at the <strong>entrance to the lava cavern</strong>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place a Trigger before <strong>Launch 2</strong>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Place a Trigger right before the <strong>Bowser statue finale</strong>.</span></li>
+          </ul>
+
+          <h4>Connect Each Trigger To A Sequencer</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Place a <strong>Sequencer</strong> hidden behind a wall near each trigger (you&apos;ll have 4 sequencers total).</span></li>
+            <li><span class="check-box"></span><span class="check-text">In each Trigger, set its action to "<strong>Start sequencer</strong>" and select the nearby sequencer.</span></li>
+          </ul>
+
+          <h4>Program Each Sequencer (the fun part!)</h4>
+          <p><strong>Sequencer 1 (Launch 1):</strong></p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.0s</span> — fire all 4 T-shaped flames at the Bowser gate.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.5s</span> — flash all red lights in the area.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=1.0s</span> — play the "Bowser roar" speaker sound.</span></li>
+          </ul>
+          <p><strong>Sequencer 2 (Cavern Entry):</strong></p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.0s</span> — boost smoke emitter intensity.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Every <span class="code-mini">0.8s</span> for 6 seconds — pulse all red lights.</span></li>
+          </ul>
+          <p><strong>Sequencer 3 (Launch 2):</strong></p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.0s</span> — fire side flames as train shoots out.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.3s</span> — play "fire whoosh" sound.</span></li>
+          </ul>
+          <p><strong>Sequencer 4 (Bowser Finale):</strong></p>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.0s</span> — fire Bowser&apos;s mouth flame for <strong>1.5 seconds</strong>.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.2s</span> — play the loud roar audio.</span></li>
+            <li><span class="check-box"></span><span class="check-text">At <span class="code-mini">t=0.0s</span> — flash ALL room lights red.</span></li>
+          </ul>
+
+          <div class="callout">
+            Each sequencer can only hold 600 seconds (10 minutes) of show. We&apos;re way under that. Plenty of room to add more effects later if you want.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 8 -->
+    <article class="phase" data-phase="8">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">08</div>
+        <div class="phase-titleblock">
+          <h2>Lighting Pass</h2>
+          <p>Set the mood. Lighting can turn a meh build into a masterpiece.</p>
+        </div>
+        <div class="phase-time">⏱ 30 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>Now go zone by zone and tune the lighting. Less is more — only add lights where you need them.</p>
+
+          <h4>Zone-by-zone</h4>
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text"><strong>Outdoor ramparts</strong>: 4 cool blue-purple spotlights from above. Creates contrast against the warm interior lights.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Tower bases</strong>: place a green spotlight at the base of each tower pointing UP the side. Makes the shells glow.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Queue</strong>: torches are the only lights. Confirm overhead lighting is OFF.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Cavern</strong>: red/orange dynamic lights ONLY. Click each one, find the "Blink" setting, set to slow flicker.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Finale</strong>: red dynamic lights set to PULSE in time with the audio. (Wire them into Sequencer 4.)</span></li>
+          </ul>
+
+          <div class="callout">
+            Take a "flying around the park" tour right after this phase. The whole castle should now look ALIVE.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 9 -->
+    <article class="phase" data-phase="9">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">09</div>
+        <div class="phase-titleblock">
+          <h2>Audio Pass</h2>
+          <p>Add sound to every zone. Headphones recommended.</p>
+        </div>
+        <div class="phase-time">⏱ 20 min</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>Sound is half the experience. Even simple background loops make the whole place feel real.</p>
+
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text"><strong>Queue speakers</strong>: a low, looping castle-drum sound at maybe 30% volume. Sometimes mix in a creepy laugh.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Pre-launch speakers</strong>: mechanical chain / clanking sound — like a giant beast revving up.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Cavern speakers</strong>: low rumble + crackling fire ambience.</span></li>
+            <li><span class="check-box"></span><span class="check-text"><strong>Bowser finale</strong>: ONE big roar that triggers when the train passes the statue. Set this as a one-shot, NOT a loop.</span></li>
+          </ul>
+
+          <div class="callout danger">
+            TPT2 only allows certain audio tracks. If a song you want doesn&apos;t work, it&apos;s probably not on the approved list. Try searching different keywords like "boss" or "epic dark".
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Phase 10 -->
+    <article class="phase" data-phase="10">
+      <button class="phase-head" aria-expanded="false">
+        <div class="phase-number">10</div>
+        <div class="phase-titleblock">
+          <h2>Polish & Hide The Supports</h2>
+          <p>The detail pass. This is what turns a 7/10 build into a 10/10.</p>
+        </div>
+        <div class="phase-time">⏱ Open-ended</div>
+        <div class="phase-toggle">+</div>
+      </button>
+      <div class="phase-body">
+        <div class="phase-content">
+          <p>Take a deep breath. The hard work is done. Now we go around fixing little gaps and making every angle pretty.</p>
+
+          <ul class="checklist">
+            <li><span class="check-box"></span><span class="check-text">Paint all coaster <strong>track supports</strong> dark gray to match the castle (default supports are a pale color).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Hide every visible track support inside a <strong>themed prop</strong> — wrap it in a stone column, hide it inside a stalactite, etc. <em>This is the single biggest thing pro builders do.</em></span></li>
+            <li><span class="check-box"></span><span class="check-text">Put <strong>benches and trash cans</strong> outside the entrance. Guests need somewhere to wait!</span></li>
+            <li><span class="check-box"></span><span class="check-text">Make a big ride sign at the entrance. Use an Image Panel with your own custom "Bowser&apos;s Wrath" logo (upload as a decal in Roblox first).</span></li>
+            <li><span class="check-box"></span><span class="check-text">Set the ride NAME in TPT2 to <strong>"Bowser&apos;s Wrath"</strong> or whatever cool name you want.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Ride it in <strong>first-person mode</strong>. Note every place that looks empty or unfinished. Go back and add more theming there.</span></li>
+            <li><span class="check-box"></span><span class="check-text">Ride it AGAIN. Find more gaps. Patch them.</span></li>
+            <li><span class="check-box"></span><span class="check-text">When you can&apos;t find anything else to fix… you&apos;re done. Save the park.</span></li>
+          </ul>
+
+          <div class="callout win">
+            Pro builders spend 80% of their time on polish. The first pass takes 6 hours. The polish can take 20+ hours. That&apos;s normal — and how you make a legendary build.
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<div class="spikes"></div>
+
+<!-- ============================================================
+     DECAL VAULT
+     ============================================================ -->
+<section id="decals">
+  <div class="section-label">File 05 — The Decal Vault</div>
+  <h2 class="section-title">Click an ID. <em>Copy.</em> Paste in TPT2.</h2>
+  <p class="section-intro">When you click an Image Panel in TPT2, choose "Enter decal ID" and paste one of these. These are official Roblox store assets, so they&apos;re safe and they don&apos;t expire.</p>
+
+  <div class="vault">
+    <div class="vault-grid">
+      <div class="decal-card" data-id="16001099035">
+        <div class="decal-copy">COPY</div>
+        <div class="decal-name">Lava Texture</div>
+        <div class="decal-id">16001099035</div>
+        <div class="decal-use">Cavern floor • lava pools • throne room floor</div>
+      </div>
+      <div class="decal-card" data-id="107683177">
+        <div class="decal-copy">COPY</div>
+        <div class="decal-name">Brick Wall</div>
+        <div class="decal-id">107683177</div>
+        <div class="decal-use">Castle exterior • tower bases • cavern walls</div>
+      </div>
+      <div class="decal-card" data-id="2081849">
+        <div class="decal-copy">COPY</div>
+        <div class="decal-name">Small Brick</div>
+        <div class="decal-id">2081849</div>
+        <div class="decal-use">Queue archways • interior accents</div>
+      </div>
+      <div class="decal-card" data-id="3712921815">
+        <div class="decal-copy">COPY</div>
+        <div class="decal-name">Classic Brick Pack</div>
+        <div class="decal-id">3712921815</div>
+        <div class="decal-use">Mixed castle masonry • has stone variants</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.5rem;">
+      Want a Koopa-crest banner? Make your own PNG, upload it as a Decal in <span class="code-mini">Roblox Studio → Asset Manager → Decals</span>, wait for moderation to approve it, then copy the asset ID from the URL.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PRO TIPS
+     ============================================================ -->
+<section id="tips">
+  <div class="section-label">File 06 — Boss Battle Tips</div>
+  <h2 class="section-title">Secrets the pros <em>won&apos;t</em> tell you.</h2>
+  <p class="section-intro">Quick tricks to make your build look ten times better with very little effort.</p>
+
+  <div class="tips-list">
+    <div class="tip reveal">
+      <div class="tip-num">01</div>
+      <h4>Get the No-Collisions gamepass</h4>
+      <p>Lets you place props through walls and into tight spots. Almost required for serious theming. If you can&apos;t buy it, just use the in-editor "Disable collisions" toggle as best you can.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">02</div>
+      <h4>Test the ride BEFORE theming</h4>
+      <p>If your coaster is rough or boring, you&apos;ll have to tear it apart and redo all the theming. Always fine-tune the track first. Theme last.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">03</div>
+      <h4>Black fire = shadow effect</h4>
+      <p>Set a fire emitter&apos;s color to pure black. Boom — instant smoke shadow. Saves your "real fire" budget for the moments that need impact.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">04</div>
+      <h4>Use the wedge+cylinder spike combo</h4>
+      <p>Stack a thin wedge on top of a short cylinder. Repeat. Place every 3 studs along any wall. Instantly reads as "evil castle". Use 50+ of them.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">05</div>
+      <h4>Hide supports, win lives</h4>
+      <p>Every visible coaster support is a place to add theming. Hide them inside columns, statues, or stalactites. Judges and friends notice immediately.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">06</div>
+      <h4>Listen to the build</h4>
+      <p>Put on headphones and walk around your park. Quiet zones feel dead. Add ambient speakers anywhere it&apos;s silent. Audio fills space invisibly.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">07</div>
+      <h4>Save before doing anything risky</h4>
+      <p>TPT2 saves automatically — but if you&apos;re about to delete a big chunk or use the terrain tool, manually save first. Trust me.</p>
+    </div>
+    <div class="tip reveal">
+      <div class="tip-num">08</div>
+      <h4>Photograph your inspiration</h4>
+      <p>Pull up screenshots of Bowser&apos;s Castle from Mario games on a second screen. Glance at them while you build. Don&apos;t copy — get inspired.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     VICTORY
+     ============================================================ -->
+<section class="victory" id="victory">
+  <svg class="victory-medal" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="44" fill="#1a1410" stroke="#f5c518" stroke-width="3"/>
+    <circle cx="50" cy="50" r="34" fill="#ff6b00" stroke="#fef7e0" stroke-width="1.5"/>
+    <polygon points="50,22 56,42 78,42 60,55 67,76 50,63 33,76 40,55 22,42 44,42" fill="#fef7e0"/>
+    <text x="50" y="92" fill="#f5c518" font-family="Rubik Mono One, monospace" font-size="6" text-anchor="middle">BOWSER&apos;S WRATH</text>
+  </svg>
+  <h2 id="victoryTitle">Quest Locked</h2>
+  <p id="victoryText">Finish all 10 phases to unlock your Master Builder badge.</p>
+
+  <div class="sources">
+    <strong>Sources & Further Reading</strong>
+    <div class="sources-grid">
+      <a href="https://www.themeparktycoon2.com/roller-coasters" target="_blank" rel="noopener">TPT2 Workshop — Coasters</a>
+      <a href="https://www.themeparktycoon2.com/scenery" target="_blank" rel="noopener">TPT2 Workshop — Scenery</a>
+      <a href="https://tpt2.fandom.com/wiki/Multi-launch_coaster" target="_blank" rel="noopener">Multi-launch Coaster Wiki</a>
+      <a href="https://tpt2.fandom.com/wiki/Fire_emitter" target="_blank" rel="noopener">Fire Emitter Wiki</a>
+      <a href="https://tpt2.fandom.com/wiki/Sequencer" target="_blank" rel="noopener">Sequencer Wiki</a>
+      <a href="https://tpt2.fandom.com/wiki/Image_panel" target="_blank" rel="noopener">Image Panel Wiki</a>
+      <a href="https://www.mariowiki.com/Bowser's_Castle" target="_blank" rel="noopener">Bowser&apos;s Castle reference</a>
+      <a href="https://create.roblox.com/store/asset/16001099035/LAVA-TEXTURE" target="_blank" rel="noopener">Lava Texture asset page</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div class="toast" id="toast">✓ Copied to clipboard!</div>
+
+<script>
+/* ============================================================
+   ZONE INFO data
+   ============================================================ */
+const ZONES = {
+  1: { title: "ZONE 1 — Queue & Castle Approach", text: "Riders walk through a stone path with torches every few feet. Dark, drum-heavy music plays. Tension builds. They cross a small bridge over a moat and approach the giant Bowser-face gate." },
+  2: { title: "ZONE 2 — Station + Launch 1", text: "The throne room. Riders board the train. Doors close. Then LAUNCH 1 — the train rockets backward into the launch tunnel and shoots forward at 50 mph through the open Bowser-face gate. Flames erupt on both sides." },
+  3: { title: "ZONE 3 — Lava Cavern", text: "Fully enclosed indoor section. Pitch dark except for the glowing lava floor. The train flies through a dive loop and a heartline roll. Fire blasts at each inversion peak. Smoke drifts up from the lava." },
+  4: { title: "ZONE 4 — Outdoor Ramparts + Launch 2", text: "The train bursts back into daylight between two spike towers. A top hat sends riders over the castle wall. LAUNCH 2 fires them at 60 mph through the back of the castle." },
+  5: { title: "ZONE 5 — Wide Loop + Lava Moat Dive", text: "A massive wide loop over the lava moat at the back. Riders see the entire castle below them. Then a steep dive turn back toward the throne room. Castle drums hit." },
+  6: { title: "ZONE 6 — Throne Room Finale", text: "LAUNCH 3 fires the train into the final scene. A giant Bowser statue roars. Flames burst from his mouth. Red lights flash. The train brakes hard. Riders are returned to the station with sweaty hands and big smiles." }
+};
+
+const zoneInfoEl = document.getElementById('zoneInfo');
+document.querySelectorAll('.zone-hotspot').forEach(el => {
+  el.addEventListener('click', () => {
+    const n = el.getAttribute('data-zone');
+    const z = ZONES[n];
+    zoneInfoEl.innerHTML = `
+      <div class="zone-info-number">${n}</div>
+      <div class="zone-info-text">
+        <strong>${z.title}</strong>
+        <p>${z.text}</p>
+      </div>
+    `;
+  });
+});
+
+/* ============================================================
+   PHASE TOGGLE + CHECKLIST + PROGRESS
+   ============================================================ */
+const STORAGE_KEY = 'bowsers-wrath-progress-v1';
+function loadState() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } }
+function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+const state = loadState();
+let totalChecks = 0;
+let doneChecks = 0;
+
+document.querySelectorAll('.phase').forEach(phase => {
+  const head = phase.querySelector('.phase-head');
+  head.addEventListener('click', () => {
+    phase.classList.toggle('is-open');
+    head.setAttribute('aria-expanded', phase.classList.contains('is-open'));
+  });
+
+  phase.querySelectorAll('.checklist li').forEach((li, i) => {
+    totalChecks++;
+    const phaseNum = phase.getAttribute('data-phase');
+    const key = `p${phaseNum}-${i}`;
+    if (state[key]) {
+      li.classList.add('done');
+      doneChecks++;
+    }
+    li.addEventListener('click', () => {
+      li.classList.toggle('done');
+      state[key] = li.classList.contains('done');
+      saveState(state);
+      updateProgress();
+      updatePhaseCompletion(phase);
+    });
+  });
+  updatePhaseCompletion(phase);
+});
+
+function updatePhaseCompletion(phase) {
+  const items = phase.querySelectorAll('.checklist li');
+  const done = phase.querySelectorAll('.checklist li.done');
+  if (items.length > 0 && items.length === done.length) {
+    phase.classList.add('is-complete');
+  } else {
+    phase.classList.remove('is-complete');
+  }
+}
+
+function updateProgress() {
+  doneChecks = document.querySelectorAll('.checklist li.done').length;
+  const pct = totalChecks === 0 ? 0 : (doneChecks / totalChecks) * 100;
+  document.getElementById('hudFill').style.width = pct + '%';
+  document.getElementById('starsEarned').textContent = doneChecks;
+  document.getElementById('starsTotal').textContent = totalChecks;
+
+  const victory = document.getElementById('victory');
+  if (pct >= 100) {
+    victory.classList.add('unlocked');
+    document.getElementById('victoryTitle').textContent = 'QUEST COMPLETE';
+    document.getElementById('victoryText').textContent = 'You forged a castle. You built a coaster. You ARE the master builder. Now show off your park to everyone you know.';
+  } else {
+    victory.classList.remove('unlocked');
+    document.getElementById('victoryTitle').textContent = 'Quest Locked';
+    document.getElementById('victoryText').textContent = `${Math.round(pct)}% complete — ${totalChecks - doneChecks} steps to go until you unlock your Master Builder badge.`;
+  }
+}
+
+document.getElementById('starsTotal').textContent = totalChecks;
+updateProgress();
+
+/* ============================================================
+   COPY DECAL IDs
+   ============================================================ */
+const toast = document.getElementById('toast');
+let toastTimer;
+document.querySelectorAll('.decal-card').forEach(card => {
+  card.addEventListener('click', async () => {
+    const id = card.getAttribute('data-id');
+    try {
+      await navigator.clipboard.writeText(id);
+      toast.textContent = `✓ Copied ${id}`;
+    } catch(e) {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = id;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast.textContent = `✓ Copied ${id}`;
+    }
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  });
+});
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('shown');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ============================================================
+   Auto-open phase 1 on first visit
+   ============================================================ */
+if (!localStorage.getItem('bowsers-wrath-visited')) {
+  document.querySelector('.phase[data-phase="1"]').classList.add('is-open');
+  document.querySelector('.phase[data-phase="1"] .phase-head').setAttribute('aria-expanded', 'true');
+  localStorage.setItem('bowsers-wrath-visited', '1');
+}
+</script>
+</body>
+</html>
