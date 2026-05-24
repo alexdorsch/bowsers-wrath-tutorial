@@ -575,6 +575,94 @@ section {
   box-shadow: 7px 7px 0 var(--magma-cool), 12px 12px 0 var(--stone-up);
 }
 
+/* ============================================================
+   MIRROR TOGGLE — flips track left/right
+   ============================================================ */
+.mirror-bar {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, var(--stone-up), var(--stone-mid));
+  border: 2px solid var(--banner);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.2rem;
+  align-items: center;
+  position: relative;
+}
+.mirror-bar::before {
+  content: '↔ ORIENTATION';
+  position: absolute;
+  top: -12px; left: 24px;
+  background: var(--stone-deep);
+  color: var(--banner);
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.7rem;
+  padding: 0 0.8rem;
+  letter-spacing: 0.2em;
+}
+.mirror-bar-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--stone-deep);
+  border: 2px solid var(--banner);
+  font-size: 1.6rem;
+  color: var(--banner);
+  transition: transform 0.4s cubic-bezier(.2,.9,.3,1.2);
+}
+body[data-mirror="true"] .mirror-bar-icon { transform: scaleX(-1); }
+.mirror-bar-info h3 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.95rem;
+  color: var(--spike);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.25rem;
+}
+.mirror-bar-info p {
+  font-size: 0.92rem;
+  color: var(--paper-dim);
+  line-height: 1.4;
+}
+.mirror-pills {
+  display: flex;
+  border: 2px solid var(--banner);
+  background: var(--stone-deep);
+}
+.mirror-pill {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  padding: 0.7rem 1rem;
+  background: transparent;
+  color: var(--paper-dim);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.mirror-pill.active {
+  background: var(--banner);
+  color: var(--paper);
+  box-shadow: inset 0 0 16px rgba(192,38,211,0.6);
+}
+.mirror-pill:hover:not(.active) { color: var(--banner); background: rgba(192,38,211,0.1); }
+
+/* When mirror is ON, flip all direction arrows */
+body[data-mirror="true"] .piece-dir { transform: scaleX(-1); display: inline-block; }
+body[data-mirror="true"] .legend-icon { transform: scaleX(-1); }
+/* Don't flip pure vertical/non-directional icons */
+body[data-mirror="true"] .legend-item:nth-child(1) .legend-icon,
+body[data-mirror="true"] .legend-item:nth-child(4) .legend-icon,
+body[data-mirror="true"] .legend-item:nth-child(5) .legend-icon,
+body[data-mirror="true"] .legend-item:nth-child(7) .legend-icon,
+body[data-mirror="true"] .legend-item:nth-child(8) .legend-icon {
+  transform: scaleX(1);
+}
+
+/* Direction-aware text swapping */
+body[data-mirror="false"] .mir-flip,
+body[data-mirror="true"]  .mir-orig { display: none; }
+
 .spikes {
   height: 22px;
   margin: 3rem 0;
@@ -613,10 +701,13 @@ section {
   }
   .piece-dir { font-size: 1rem; }
   .phase-nav { position: static; }
+  .mirror-bar { grid-template-columns: 1fr; padding: 1rem; }
+  .mirror-pills { width: 100%; }
+  .mirror-pill { flex: 1; padding: 0.6rem 0.4rem; font-size: 0.7rem; }
 }
 </style>
 </head>
-<body>
+<body data-mirror="true">
 
 <!-- HUD -->
 <div class="hud" role="banner">
@@ -634,6 +725,19 @@ section {
   <h1 class="hero-title">TRACK<br><em>BLUEPRINT</em></h1>
   <p class="hero-sub">Every piece, in the exact order to place them. Tap each piece as you place it — your progress saves. Print this page or keep it open on a second screen while you build.</p>
 </header>
+
+<!-- MIRROR TOGGLE -->
+<div class="mirror-bar">
+  <div class="mirror-bar-icon">🔄</div>
+  <div class="mirror-bar-info">
+    <h3>Track orientation</h3>
+    <p><span class="mir-orig"><strong>Entrance on left</strong> — train exits station heading north, first climb spirals up the right wall.</span><span class="mir-flip"><strong>Entrance on right</strong> — train exits heading north, first climb spirals up the <em>left</em> wall (mirrored layout).</span> Switch any time — your piece checklist stays the same.</p>
+  </div>
+  <div class="mirror-pills" role="tablist">
+    <button class="mirror-pill" data-mirror-choice="false" role="tab">Original</button>
+    <button class="mirror-pill active" data-mirror-choice="true" role="tab" aria-selected="true">Mirrored ↔</button>
+  </div>
+</div>
 
 <!-- STATS -->
 <div class="stats">
@@ -761,14 +865,14 @@ section {
   <article class="phase-block" id="phase-b">
     <header class="phase-header">
       <div class="phase-letter">B</div>
-      <div class="phase-info"><h3>Spiral Up to Tier 2</h3><p>Right wall climb · gain ~10 studs of height</p></div>
+      <div class="phase-info"><h3>Spiral Up to Tier 2</h3><p><span class="mir-orig">Right</span><span class="mir-flip">Left</span> wall climb · gain ~10 studs of height</p></div>
       <div class="phase-meta">⤴ +10 studs</div>
     </header>
     <div class="pieces">
       <div class="piece" data-piece="b1">
         <div class="piece-num">04</div>
         <div class="piece-check"></div>
-        <div class="piece-name">90° turn wide <small>Curve right to head toward the east (right) wall. Stays at ground level.</small></div>
+        <div class="piece-name">90° turn wide <small><span class="mir-orig">Curve <strong>right</strong> to head toward the east (right) wall.</span><span class="mir-flip">Curve <strong>left</strong> (hold <code>Shift</code> when placing if editor defaults to right) to head toward the west (left) wall.</span> Stays at ground level.</small></div>
         <div class="piece-dir">↗</div>
         <div class="piece-count">×1</div>
         <div class="piece-height">▣ Y=0</div>
@@ -776,7 +880,7 @@ section {
       <div class="piece" data-piece="b2">
         <div class="piece-num">05</div>
         <div class="piece-check"></div>
-        <div class="piece-name">Slight slope turn 90° wide <small>Continues curving right while climbing about 2 studs. Banking auto-applies.</small></div>
+        <div class="piece-name">Slight slope turn 90° wide <small>Continues curving <span class="mir-orig">right</span><span class="mir-flip">left</span> while climbing about 2 studs. Banking auto-applies.</small></div>
         <div class="piece-dir">↗⤴</div>
         <div class="piece-count">×1</div>
         <div class="piece-height">▣ Y=2</div>
@@ -877,14 +981,14 @@ section {
   <article class="phase-block" id="phase-f">
     <header class="phase-header">
       <div class="phase-letter">F</div>
-      <div class="phase-info"><h3>Spiral Up to Tier 3</h3><p>Left wall climb · highest point of ride</p></div>
+      <div class="phase-info"><h3>Spiral Up to Tier 3</h3><p><span class="mir-orig">Left</span><span class="mir-flip">Right</span> wall climb · highest point of ride</p></div>
       <div class="phase-meta">⤴ +15 studs</div>
     </header>
     <div class="pieces">
       <div class="piece" data-piece="f1">
         <div class="piece-num">13</div>
         <div class="piece-check"></div>
-        <div class="piece-name">90° turn wide (left) <small>Curve left toward the west (left) wall. Hold <code>Shift</code> to mirror the turn direction if the editor defaults to right.</small></div>
+        <div class="piece-name">90° turn wide (<span class="mir-orig">left</span><span class="mir-flip">right</span>) <small><span class="mir-orig">Curve <strong>left</strong> toward the west (left) wall. Hold <code>Shift</code> to mirror the turn direction if the editor defaults to right.</span><span class="mir-flip">Curve <strong>right</strong> toward the east (right) wall.</span></small></div>
         <div class="piece-dir">↖</div>
         <div class="piece-count">×1</div>
         <div class="piece-height">▣ Y=5</div>
@@ -900,7 +1004,7 @@ section {
       <div class="piece" data-piece="f3">
         <div class="piece-num">15</div>
         <div class="piece-check"></div>
-        <div class="piece-name">Spirals <small>Second helix — this one is taller. Climbs ~8 studs across a 360° spiral. Mirror to the LEFT this time so it spirals on the left side.</small></div>
+        <div class="piece-name">Spirals <small>Second helix — this one is taller. Climbs ~8 studs across a 360° spiral. Mirror to the <strong><span class="mir-orig">LEFT</span><span class="mir-flip">RIGHT</span></strong> this time so it spirals on the <span class="mir-orig">left</span><span class="mir-flip">right</span> side.</small></div>
         <div class="piece-dir">↻⤴</div>
         <div class="piece-count">×1</div>
         <div class="piece-height">▣ Y=18</div>
@@ -1135,6 +1239,24 @@ section {
 </section>
 
 <script>
+// Mirror toggle
+const MIRROR_KEY = 'bowsers-wrath-track-mirror';
+function applyMirror(val) {
+  const isMirror = val === 'true' || val === true;
+  document.body.setAttribute('data-mirror', isMirror ? 'true' : 'false');
+  document.querySelectorAll('.mirror-pill').forEach(p => {
+    const matches = p.getAttribute('data-mirror-choice') === (isMirror ? 'true' : 'false');
+    p.classList.toggle('active', matches);
+    p.setAttribute('aria-selected', matches ? 'true' : 'false');
+  });
+  localStorage.setItem(MIRROR_KEY, isMirror ? 'true' : 'false');
+}
+document.querySelectorAll('.mirror-pill').forEach(pill => {
+  pill.addEventListener('click', () => applyMirror(pill.getAttribute('data-mirror-choice')));
+});
+const savedMirror = localStorage.getItem(MIRROR_KEY);
+if (savedMirror === 'false' || savedMirror === 'true') applyMirror(savedMirror);
+
 const STORAGE_KEY = 'bowsers-wrath-track-progress-v1';
 const state = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } })();
 
