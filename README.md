@@ -4,6 +4,8 @@ A kid-friendly, step-by-step tutorial for building a realistic Bowser-themed rol
 
 **👉 [Open the tutorial](https://alexdorsch.github.io/bowsers-wrath-tutorial/)**
 
+**📐 [Track Blueprint](https://alexdorsch.github.io/bowsers-wrath-tutorial/track.html)** — piece-by-piece guide for the compact 30×30 build.
+
 ## What's inside
 
 - Interactive top-down castle map with clickable zones
