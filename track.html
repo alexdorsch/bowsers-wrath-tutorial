@@ -647,6 +647,97 @@ body[data-mirror="true"] .mirror-bar-icon { transform: scaleX(-1); }
 }
 .mirror-pill:hover:not(.active) { color: var(--banner); background: rgba(192,38,211,0.1); }
 
+/* ============================================================
+   COMPASS / FACING BADGE
+   ============================================================ */
+.piece-face {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--paper-mute);
+  background: var(--stone-deep);
+  border: 1px solid var(--stone-edge);
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 56px;
+  display: flex; flex-direction: column; gap: 2px;
+  justify-self: end;
+}
+.piece-face::before {
+  content: 'FACING';
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  color: var(--paper-mute);
+}
+.piece-face::after {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+.piece-face[data-orig="N"]::after { content: 'N ↑'; color: #60a5fa; }
+.piece-face[data-orig="S"]::after { content: 'S ↓'; color: #14b8a6; }
+.piece-face[data-orig="E"]::after { content: 'E →'; color: var(--spike); }
+.piece-face[data-orig="W"]::after { content: 'W ←'; color: var(--banner); }
+body[data-mirror="true"] .piece-face[data-orig="E"]::after { content: 'W ←'; color: var(--banner); }
+body[data-mirror="true"] .piece-face[data-orig="W"]::after { content: 'E →'; color: var(--spike); }
+/* N and S don't change when mirrored */
+
+/* New 6-column piece grid to fit the compass badge */
+.piece {
+  grid-template-columns: 50px 36px 1fr auto auto auto auto !important;
+  gap: 0.8rem !important;
+}
+
+/* Compass explainer card */
+.compass-card {
+  margin: 2rem auto;
+  padding: 1.6rem;
+  background: linear-gradient(135deg, var(--stone-up), var(--stone-mid));
+  border: 2px solid var(--magma-core);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.6rem;
+  align-items: center;
+  position: relative;
+}
+.compass-card::before {
+  content: '🧭 ORIENTATION';
+  position: absolute; top: -12px; left: 24px;
+  background: var(--stone-deep); color: var(--magma-hot);
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.7rem; padding: 0 0.8rem;
+  letter-spacing: 0.2em;
+}
+.compass-svg { width: 140px; height: 140px; }
+.compass-info h4 {
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 1rem; color: var(--spike);
+  letter-spacing: 0.02em; margin-bottom: 0.6rem;
+}
+.compass-info p {
+  font-size: 0.94rem; color: var(--paper-dim);
+  line-height: 1.5; margin-bottom: 0.7rem;
+}
+.compass-info ul {
+  list-style: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+.compass-info li {
+  padding: 0.15rem 0;
+}
+.compass-info li b {
+  display: inline-block;
+  width: 22px;
+  font-family: 'Rubik Mono One', monospace;
+  font-size: 0.95rem;
+}
+.compass-info .cn { color: #60a5fa; }
+.compass-info .cs { color: #14b8a6; }
+.compass-info .ce { color: var(--spike); }
+.compass-info .cw { color: var(--banner); }
+
 /* When mirror is ON, flip all direction arrows */
 body[data-mirror="true"] .piece-dir { transform: scaleX(-1); display: inline-block; }
 body[data-mirror="true"] .legend-icon { transform: scaleX(-1); }
@@ -687,19 +778,23 @@ body[data-mirror="true"]  .mir-orig { display: none; }
   .phase-header { grid-template-columns: auto 1fr; padding: 0.9rem 1rem; }
   .phase-meta { display: none; }
   .piece {
-    grid-template-columns: 36px 28px 1fr;
-    gap: 0.6rem;
+    grid-template-columns: 36px 28px 1fr !important;
+    gap: 0.6rem !important;
     padding: 0.9rem 0.8rem;
-    grid-template-rows: auto auto;
   }
   .piece-num { font-size: 1.2rem; }
-  .piece-dir, .piece-count, .piece-height {
+  .piece-dir, .piece-count, .piece-height, .piece-face {
     grid-column: 3;
     justify-self: start;
     font-size: 0.78rem;
     padding: 0.2rem 0.45rem;
+    min-width: 0;
   }
   .piece-dir { font-size: 1rem; }
+  .piece-face { flex-direction: row; gap: 0.4rem; align-items: center; }
+  .piece-face::before { font-size: 0.6rem; }
+  .compass-card { grid-template-columns: 1fr; text-align: center; }
+  .compass-svg { margin: 0 auto; }
   .phase-nav { position: static; }
   .mirror-bar { grid-template-columns: 1fr; padding: 1rem; }
   .mirror-pills { width: 100%; }
@@ -812,6 +907,40 @@ body[data-mirror="true"]  .mir-orig { display: none; }
   <h2 class="section-title">28 pieces, <em>in order</em>.</h2>
   <p style="color: var(--paper-dim); max-width: 760px; margin-bottom: 1.5rem;">Place them top-to-bottom. Tap a piece card after you place it — progress saves automatically. Phase letters match the side-view diagram from the main tutorial.</p>
 
+  <!-- COMPASS ORIENTATION CARD -->
+  <div class="compass-card">
+    <svg class="compass-svg" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="60" fill="#0c0907" stroke="#4a3a30" stroke-width="2"/>
+      <circle cx="70" cy="70" r="50" fill="none" stroke="#2a211c" stroke-dasharray="2 4"/>
+      <!-- N -->
+      <polygon points="70,15 64,40 76,40" fill="#60a5fa"/>
+      <text x="70" y="11" fill="#60a5fa" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle">N</text>
+      <!-- S -->
+      <polygon points="70,125 64,100 76,100" fill="#14b8a6"/>
+      <text x="70" y="138" fill="#14b8a6" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle">S</text>
+      <!-- E -->
+      <polygon points="125,70 100,64 100,76" fill="#f5c518"/>
+      <text x="134" y="74" fill="#f5c518" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle">E</text>
+      <!-- W -->
+      <polygon points="15,70 40,64 40,76" fill="#c026d3"/>
+      <text x="6" y="74" fill="#c026d3" font-family="Rubik Mono One, monospace" font-size="11" text-anchor="middle">W</text>
+      <!-- Train icon in center -->
+      <rect x="62" y="60" width="16" height="22" fill="#ff6b00" stroke="#fef7e0" stroke-width="1.5" rx="2"/>
+      <polygon points="62,60 78,60 70,52" fill="#ff6b00" stroke="#fef7e0" stroke-width="1.5"/>
+      <text x="70" y="100" fill="#c9b89a" font-family="JetBrains Mono, monospace" font-size="7" text-anchor="middle">YOUR TRAIN</text>
+    </svg>
+    <div class="compass-info">
+      <h4>Compass = relative to your station</h4>
+      <p>Forget real-world compass — these directions are anchored to your train as it sits in the station ready to launch. The whole compass rotates with however you placed the station in your park.</p>
+      <ul>
+        <li><b class="cn">N</b> the direction the train points (front of the loaded train)</li>
+        <li><b class="cs">S</b> the back of the train (where guests entered)</li>
+        <li><b class="ce">E</b> the train's right side</li>
+        <li><b class="cw">W</b> the train's left side</li>
+      </ul>
+    </div>
+  </div>
+
   <nav class="phase-nav" id="phaseNav">
     <a href="#phase-a">A · STATION</a>
     <a href="#phase-b">B · CLIMB→T2</a>
@@ -840,7 +969,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Station <small>Place along the front edge of your plot. Must be 8 studs long. Train exits going north (into cavern).</small></div>
         <div class="piece-dir">↑</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="N"></div>
       </div>
       <div class="piece" data-piece="a2">
         <div class="piece-num">02</div>
@@ -848,7 +977,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Straight track <small>4-stud spacer right after the station — gives clean separation before the boost.</small></div>
         <div class="piece-dir">↑</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="N"></div>
       </div>
       <div class="piece" data-piece="a3">
         <div class="piece-num">03</div>
@@ -856,7 +985,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Straight with boosters <small>Toggle "boosters" on the straight piece (toolbar icon ⚡). This is <strong>Launch 1</strong>. Set boost target to <code>45 mph</code>. About 16 studs of forward thrust.</small></div>
         <div class="piece-dir">↑⚡</div>
         <div class="piece-count">×4</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="N"></div>
       </div>
     </div>
   </article>
@@ -875,7 +1004,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">90° turn wide <small><span class="mir-orig">Curve <strong>right</strong> to head toward the east (right) wall.</span><span class="mir-flip">Curve <strong>left</strong> (hold <code>Shift</code> when placing if editor defaults to right) to head toward the west (left) wall.</span> Stays at ground level.</small></div>
         <div class="piece-dir">↗</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="E"></div>
       </div>
       <div class="piece" data-piece="b2">
         <div class="piece-num">05</div>
@@ -883,7 +1012,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Slight slope turn 90° wide <small>Continues curving <span class="mir-orig">right</span><span class="mir-flip">left</span> while climbing about 2 studs. Banking auto-applies.</small></div>
         <div class="piece-dir">↗⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=2</div>
+        <div class="piece-height">▣ Y=2</div><div class="piece-face" data-orig="S"></div>
       </div>
       <div class="piece" data-piece="b3">
         <div class="piece-num">06</div>
@@ -891,7 +1020,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Spirals <small>A full 360° helix that climbs ~6 studs. Use the editor's spiral controls — set radius to <code>~6 studs</code> so it fits inside the cavern.</small></div>
         <div class="piece-dir">↻⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=8</div>
+        <div class="piece-height">▣ Y=8</div><div class="piece-face" data-orig="S"></div>
       </div>
       <div class="piece" data-piece="b4">
         <div class="piece-num">07</div>
@@ -899,7 +1028,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Slight slope (up) <small>Levels off at Tier 2 height. Adjust the white arrow if you didn't quite hit Y=10.</small></div>
         <div class="piece-dir">⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=10</div>
+        <div class="piece-height">▣ Y=10</div><div class="piece-face" data-orig="S"></div>
       </div>
     </div>
   </article>
@@ -918,7 +1047,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Half loop <small>Track arcs up and over — peaks ~6 studs above Tier 2 (Y≈16, near the cavern ceiling), then comes back down.</small></div>
         <div class="piece-dir">⤴↻</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=10 (peak 16)</div>
+        <div class="piece-height">▣ Y=10 (peak 16)</div><div class="piece-face" data-orig="N"></div>
       </div>
       <div class="piece" data-piece="c2">
         <div class="piece-num">09</div>
@@ -926,7 +1055,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Vertical twist (180°) <small>Half-roll on exit. The combination of half-loop + half-twist = classic "dive loop" element.</small></div>
         <div class="piece-dir">↻</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=10</div>
+        <div class="piece-height">▣ Y=10</div><div class="piece-face" data-orig="N"></div>
       </div>
     </div>
   </article>
@@ -945,7 +1074,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Corkscrew <small>Full 360° rotation while descending ~4 studs. Adjust radius small (~5 studs) to fit.</small></div>
         <div class="piece-dir">↻⤵</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=6</div>
+        <div class="piece-height">▣ Y=6</div><div class="piece-face" data-orig="N"></div>
       </div>
       <div class="piece" data-piece="d2">
         <div class="piece-num">11</div>
@@ -953,7 +1082,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Slight slope (down) <small>Final descent to Tier 1.</small></div>
         <div class="piece-dir">⤵</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=5</div>
+        <div class="piece-height">▣ Y=5</div><div class="piece-face" data-orig="N"></div>
       </div>
     </div>
   </article>
@@ -972,7 +1101,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Straight with boosters <small>This is <strong>Launch 2</strong>. Set boost target to <code>50 mph</code>. Crosses the cavern interior on Tier 1 — riders see the lava floor 5 studs below.</small></div>
         <div class="piece-dir">→⚡</div>
         <div class="piece-count">×3</div>
-        <div class="piece-height">▣ Y=5</div>
+        <div class="piece-height">▣ Y=5</div><div class="piece-face" data-orig="N"></div>
       </div>
     </div>
   </article>
@@ -991,7 +1120,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">90° turn wide (<span class="mir-orig">left</span><span class="mir-flip">right</span>) <small><span class="mir-orig">Curve <strong>left</strong> toward the west (left) wall. Hold <code>Shift</code> to mirror the turn direction if the editor defaults to right.</span><span class="mir-flip">Curve <strong>right</strong> toward the east (right) wall.</span></small></div>
         <div class="piece-dir">↖</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=5</div>
+        <div class="piece-height">▣ Y=5</div><div class="piece-face" data-orig="W"></div>
       </div>
       <div class="piece" data-piece="f2">
         <div class="piece-num">14</div>
@@ -999,7 +1128,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Steep slope (up) <small>Climbs ~5 studs in a short span. Train is decelerating from launch — that's fine.</small></div>
         <div class="piece-dir">⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=10</div>
+        <div class="piece-height">▣ Y=10</div><div class="piece-face" data-orig="W"></div>
       </div>
       <div class="piece" data-piece="f3">
         <div class="piece-num">15</div>
@@ -1007,7 +1136,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Spirals <small>Second helix — this one is taller. Climbs ~8 studs across a 360° spiral. Mirror to the <strong><span class="mir-orig">LEFT</span><span class="mir-flip">RIGHT</span></strong> this time so it spirals on the <span class="mir-orig">left</span><span class="mir-flip">right</span> side.</small></div>
         <div class="piece-dir">↻⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=18</div>
+        <div class="piece-height">▣ Y=18</div><div class="piece-face" data-orig="W"></div>
       </div>
       <div class="piece" data-piece="f4">
         <div class="piece-num">16</div>
@@ -1015,7 +1144,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Slight slope (up) <small>Tops out at Tier 3 — about the height of your cavern roof.</small></div>
         <div class="piece-dir">⤴</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=20</div>
+        <div class="piece-height">▣ Y=20</div><div class="piece-face" data-orig="W"></div>
       </div>
     </div>
   </article>
@@ -1035,7 +1164,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Half loop <small>Arcs up and over — the PEAK pokes through your cavern roof. Build a 4×4 stud opening in the cavern ceiling exactly here so the train pops out for ~1 second.</small></div>
         <div class="piece-dir">⤴↻</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ peak Y=25</div>
+        <div class="piece-height">▣ peak Y=25</div><div class="piece-face" data-orig="E"></div>
       </div>
       <div class="piece" data-piece="g2">
         <div class="piece-num">18</div>
@@ -1043,7 +1172,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Vertical twist (180°) <small>Inverts the train on the way down. Riders are upside-down briefly.</small></div>
         <div class="piece-dir">↻</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=20</div>
+        <div class="piece-height">▣ Y=20</div><div class="piece-face" data-orig="E"></div>
       </div>
     </div>
   </article>
@@ -1062,7 +1191,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Steep slope (down) <small>Drops 8 studs hard. Use the white arrow to stretch this piece — long drops feel more dramatic.</small></div>
         <div class="piece-dir">⤵</div>
         <div class="piece-count">×2</div>
-        <div class="piece-height">▣ Y=12</div>
+        <div class="piece-height">▣ Y=12</div><div class="piece-face" data-orig="E"></div>
       </div>
       <div class="piece" data-piece="h2">
         <div class="piece-num">20</div>
@@ -1070,7 +1199,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Vertical twist (360°) <small>This is the <strong>heartline roll</strong>. Full barrel-roll along the track axis. Stretch its length with the white arrow until the roll feels SLOW (4–6 stud length is best).</small></div>
         <div class="piece-dir">↻</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=12</div>
+        <div class="piece-height">▣ Y=12</div><div class="piece-face" data-orig="E"></div>
       </div>
     </div>
   </article>
@@ -1089,7 +1218,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Slight slope (down) <small>Drops to ground level for the final straight.</small></div>
         <div class="piece-dir">⤵</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="E"></div>
       </div>
       <div class="piece" data-piece="i2">
         <div class="piece-num">22</div>
@@ -1097,7 +1226,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Straight with boosters <small><strong>Launch 3</strong>. Set boost target to <code>35 mph</code> — slower than the other launches because we're about to hit Bowser. 8 studs total.</small></div>
         <div class="piece-dir">→⚡</div>
         <div class="piece-count">×2</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="E"></div>
       </div>
     </div>
   </article>
@@ -1116,7 +1245,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Straight track <small>8 studs of straight running along the back wall. This is where the train passes the Bowser face you'll build in Phase 6 of the main tutorial. His mouth-flame fires right as the train crosses this section.</small></div>
         <div class="piece-dir">→</div>
         <div class="piece-count">×2</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="E"></div>
       </div>
     </div>
   </article>
@@ -1125,7 +1254,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
   <article class="phase-block" id="phase-k">
     <header class="phase-header">
       <div class="phase-letter">K</div>
-      <div class="phase-info"><h3>Brake + Return to Station</h3><p>Slow down and reconnect</p></div>
+      <div class="phase-info"><h3>Brake + Return to Station</h3><p>Slow down · 270° U-turn · reconnect</p></div>
       <div class="phase-meta">🛑 BRAKES</div>
     </header>
     <div class="pieces">
@@ -1135,7 +1264,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">Block brakes <small>Slows the train to safe station-entry speed. 8 studs of braking total.</small></div>
         <div class="piece-dir">→🛑</div>
         <div class="piece-count">×2</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="E"></div>
       </div>
       <div class="piece" data-piece="k2">
         <div class="piece-num">25</div>
@@ -1143,7 +1272,7 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">90° turn wide <small>Begin the 180° return toward the station entrance.</small></div>
         <div class="piece-dir">↗</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="S"></div>
       </div>
       <div class="piece" data-piece="k3">
         <div class="piece-num">26</div>
@@ -1151,23 +1280,23 @@ body[data-mirror="true"]  .mir-orig { display: none; }
         <div class="piece-name">90° turn wide <small>Complete the 180° turn. Now pointing south toward the station entrance.</small></div>
         <div class="piece-dir">↗</div>
         <div class="piece-count">×1</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="W"></div>
       </div>
       <div class="piece" data-piece="k4">
         <div class="piece-num">27</div>
         <div class="piece-check"></div>
-        <div class="piece-name">Straight track <small>Glide back into the station. Add or remove pieces here (or stretch with white arrow) until the track <em>exactly</em> meets the station entrance. The editor connects automatically when alignment is perfect.</small></div>
-        <div class="piece-dir">→</div>
-        <div class="piece-count">×1–2</div>
-        <div class="piece-height">▣ Y=0</div>
+        <div class="piece-name">90° turn wide <small><span class="mir-orig"><strong>Third right turn</strong> (W→N)</span><span class="mir-flip"><strong>Third left turn</strong> (E→N)</span> — completes the 270° U-turn back to the station. After this piece, the train is finally pointing <strong>N</strong> and lined up with the station entry.</small></div>
+        <div class="piece-dir">↗</div>
+        <div class="piece-count">×1</div>
+        <div class="piece-height">▣ Y=0</div><div class="piece-face" data-orig="N"></div>
       </div>
       <div class="piece" data-piece="k5">
         <div class="piece-num">28</div>
         <div class="piece-check"></div>
-        <div class="piece-name">Auto-connect to station <small>Not really a piece — when track exit meets station entry cleanly, the editor closes the loop. If it errors, tweak piece 27's length by tiny amounts.</small></div>
-        <div class="piece-dir">↺</div>
-        <div class="piece-count">×1</div>
-        <div class="piece-height">▣ LOOP</div>
+        <div class="piece-name">Straight + auto-connect <small>Glide N back into the station entry. Add or remove straights here (or stretch with white arrow) until the track <em>exactly</em> meets the station opening. The editor closes the loop automatically when alignment is perfect.</small></div>
+        <div class="piece-dir">↑</div>
+        <div class="piece-count">×1–2</div>
+        <div class="piece-height">▣ LOOP</div><div class="piece-face" data-orig="N"></div>
       </div>
     </div>
   </article>
